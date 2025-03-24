@@ -7,6 +7,7 @@ pragma solidity 0.8.26;
  *
  * @dev Utility library for managing expiration dates.
  */
+// TODO: we can add dailies if needed
 library ExpDates {
 
     struct DateTime {
