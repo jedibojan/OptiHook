@@ -13,6 +13,15 @@ This document outlines a detailed, step-by-step plan for implementing the projec
   - Use OpenZeppelin's `Ownable` for access control.
   - Store expiration times as timestamps (e.g., `uint256`) in an array or mapping.
   - Ensure expiration times are in the future.
+  - Expiry date is always Friday, 8:00 AM UTC.
+  - The rules are following:
+    - First approaching Friday and Friday after that
+    - Last Friday in current month
+    - Last Friday in following month
+    - Last Friday in current quarter if todays month is first month in quarter
+    - Last Friday in next quarter
+    - Last Friday in quarter after that (two quarters away)
+    - Last Friday in quarter after that (three quarters away)
 - **Functions**:
   - `getExpirationTimes()`: Returns an array of all available expiration times (view function).
   - `isExpirationTimeAvailable(uint256 timestamp)`: Checks if a specific expiration time exists (view function).
