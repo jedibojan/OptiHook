@@ -223,7 +223,8 @@ contract ExpDatesTest is Test {
         );
     }
 
-    function testGasConsumptionForGetExpirationTimes() public view {
+    function testGasConsumptionForGetExpirationTimes() public {
+        vm.warp(FIRST_FRIDAY_TIMESTAMP + 5 * DAY_IN_SECONDS); // April 2, 2025
         uint256 gasStart = gasleft();
         ExpDates.getExpirationTimes();
         uint256 gasUsed = gasStart - gasleft();
