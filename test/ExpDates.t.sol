@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.26;
 
 import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
 import {ExpDates} from "../src/ExpDates.sol";
 
 contract ExpDatesTest is Test {
@@ -220,5 +221,12 @@ contract ExpDatesTest is Test {
             ExpDates.isValidExpirationTime(expectedTimesApril[0] + 3 * DAY_IN_SECONDS),
             "Random timestamp should be invalid"
         );
+    }
+
+    function testGasConsumptionForGetExpirationTimes() public view {
+        uint256 gasStart = gasleft();
+        ExpDates.getExpirationTimes();
+        uint256 gasUsed = gasStart - gasleft();
+        console.log("Gas used for getExpirationTimes():", gasUsed);
     }
 } 
