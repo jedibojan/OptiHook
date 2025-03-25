@@ -14,9 +14,6 @@ library ExpDates {
         uint16 year;
         uint8 month;
         uint8 day;
-        uint8 hour;
-        uint8 minute;
-        uint8 second;
     }
 
     uint16 private constant ORIGIN_YEAR = 1970;
@@ -68,21 +65,18 @@ library ExpDates {
         DateTime memory nowDateTime = _parseTimestamp(uint32(block.timestamp));
         uint8 index;
 
-        uint32 firstFriday = _getFirstFriday(uint32(block.timestamp));
-
         // add first Friday from now if 1) nothing is added - no dailies 2) if Friday is not already added
-        if (index == 0 || timestamps[index - 1] < firstFriday) {
-            timestamps[index++] = firstFriday;
-        }
+        uint32 firstFriday = _getFirstFriday(uint32(block.timestamp));
+        timestamps[index++] = firstFriday;
 
         // always add second friday from now, even if it's next month
         uint32 secondFriday = _getNextFriday(firstFriday);
         timestamps[index++] = secondFriday;
         uint32 firstFridayNextQuarter = secondFriday;
 
-        // last friday this month, if not alredy added
-        uint32 firstFridayNextMonth = firstFriday;
+        // last friday this month, if not already added
         DateTime memory firstFridayDateTime = _parseTimestamp(firstFriday);
+        uint32 firstFridayNextMonth = firstFriday;
         if (firstFridayDateTime.month == nowDateTime.month) {
             uint32 lastFridayThisMonth;
             (lastFridayThisMonth, firstFridayNextMonth) = _getLastFridayInMonth(nowDateTime.month, firstFriday);
@@ -134,10 +128,10 @@ library ExpDates {
      * @return Timestamp of first Friday after specified timestamp.
      */
     function _getFirstFriday(uint32 timestamp) private pure returns (uint32) {
-
-        uint32 weeksPassed = (timestamp - FIRST_FRIDAY_TIMESTAMP) / (SEVEN_DAYS_IN_SECONDS);
-        uint32 nextFriday = FIRST_FRIDAY_TIMESTAMP + (weeksPassed + 1) * SEVEN_DAYS_IN_SECONDS;
-        return nextFriday;
+        unchecked {
+            uint32 weeksPassed = (timestamp - FIRST_FRIDAY_TIMESTAMP) / SEVEN_DAYS_IN_SECONDS;
+            return FIRST_FRIDAY_TIMESTAMP + (weeksPassed + 1) * SEVEN_DAYS_IN_SECONDS;
+        }
     }
 
     /**
@@ -162,7 +156,9 @@ library ExpDates {
      * @return Timestamp of next Friday after specified Friday.
      */
     function _getNextFriday(uint32 friday) private pure returns (uint32) {
-        return friday + SEVEN_DAYS_IN_SECONDS;
+        unchecked {
+            return friday + SEVEN_DAYS_IN_SECONDS;
+        }
     }
 
     /**
@@ -172,16 +168,17 @@ library ExpDates {
      * @return Timestamp of last Friday in specified month, and timestamp of first Friday in the following month.
      */
     function _getLastFridayInMonth(uint8 month, uint32 firstFridayTimestamp) private pure returns (uint32, uint32) {
-        uint32 nextFriday = _getNextFriday(firstFridayTimestamp);
-        uint32 lastFriday = firstFridayTimestamp;
-        DateTime memory nextFridayDateTime = _parseTimestamp(nextFriday);
-        while (nextFridayDateTime.month == month) {
-            lastFriday = nextFriday;
-            nextFriday = _getNextFriday(nextFriday);
-            nextFridayDateTime = _parseTimestamp(nextFriday);
+        unchecked {
+            uint32 nextFriday = _getNextFriday(firstFridayTimestamp);
+            uint32 lastFriday = firstFridayTimestamp;
+            DateTime memory nextFridayDateTime = _parseTimestamp(nextFriday);
+            while (nextFridayDateTime.month == month) {
+                lastFriday = nextFriday;
+                nextFriday = _getNextFriday(nextFriday);
+                nextFridayDateTime = _parseTimestamp(nextFriday);
+            }
+            return (lastFriday, nextFriday);
         }
-
-        return (lastFriday, nextFriday);
     }
 
     /**
@@ -190,12 +187,12 @@ library ExpDates {
      * @return Timestamp of last Friday in specified quarter, and timestamp of first Friday in the following quarter.
      */
     function _getLastFridayInQuarter(uint32 firstFridayTimestamp) private pure returns (uint32) {
-        // advance 10 weeks, land on some friday in last month
-        uint32 firstFridayLastMonthInQuarter = firstFridayTimestamp + 70 * DAY_IN_SECONDS;
-        DateTime memory firstFridayLastMonthInQuarterDateTime = _parseTimestamp(firstFridayLastMonthInQuarter);
-        (uint32 lastFridayThisQuarter,) = _getLastFridayInMonth(firstFridayLastMonthInQuarterDateTime.month, firstFridayLastMonthInQuarter);
-
-        return lastFridayThisQuarter;
+        unchecked {
+            uint32 firstFridayLastMonthInQuarter = firstFridayTimestamp + 70 * DAY_IN_SECONDS;
+            DateTime memory firstFridayLastMonthInQuarterDateTime = _parseTimestamp(firstFridayLastMonthInQuarter);
+            (uint32 lastFridayThisQuarter,) = _getLastFridayInMonth(firstFridayLastMonthInQuarterDateTime.month, firstFridayLastMonthInQuarter);
+            return lastFridayThisQuarter;
+        }
     }
 
     /**
@@ -204,7 +201,9 @@ library ExpDates {
      * @return Quarter in a year of a given month.
      */
     function _getQuarter(uint8 month) private pure returns (uint8) {
-        return (month - 1) / uint8(3) + 1;
+        unchecked {
+            return (month - 1) / 3 + 1;
+        }
     }
 
     /**
@@ -233,11 +232,11 @@ library ExpDates {
      * @param timestamp Timestamp to be parsed.
      * @return DateTime struct of parsed timestamp.
      */
-    function _parseTimestamp(uint32 timestamp) private pure returns (DateTime memory) {
+    function _parseTimestamp(uint32 timestamp) private pure returns (DateTime memory) {        
         uint32 secondsAccountedFor = 0;
         uint32 buf;
         uint8 i;
-        DateTime memory dt = DateTime(0, 0, 0, 0, 0, 0);
+        DateTime memory dt = DateTime(0, 0, 0);
 
         // year
         dt.year = _getYear(timestamp);
@@ -268,29 +267,33 @@ library ExpDates {
         }
 
         return dt;
-   }
+    }
 
     /**
      * @dev Checks if year is leap year or not.
      * @param year Year to be checked.
      * @return True if year is leap year, otherwise false.
      */
-    function _isLeapYear(uint16 year) private pure returns (bool) {
-        if (year % 4 != 0) {
-            return false;
-        }
-        if (year % 100 != 0) {
+    function _isLeapYear(uint16 year) internal pure returns (bool) {
+        unchecked {
+            if (year & 3 != 0) {
+                return false;
+            }
+            if (year % 100 != 0) {
+                return true;
+            }
+            if (year % 400 != 0) {
+                return false;
+            }
             return true;
         }
-        if (year % 400 != 0) {
-            return false;
-        }
-        return true;
     }
 
-    function _leapYearsBefore(uint32 year) private pure returns (uint32) {
-        year -= 1;
-        return year / 4 - year / 100 + year / 400;
+    function _leapYearsBefore(uint32 year) internal pure returns (uint32) {
+        unchecked {
+            year -= 1;
+            return year / 4 - year / 100 + year / 400;
+        }
     }
 
     /**
@@ -298,28 +301,29 @@ library ExpDates {
      * @param timestamp Timestamp to be parsed.
      * @return Year of parsed timestamp.
      */
-    function _getYear(uint32 timestamp) private pure returns (uint16) {
-        uint32 secondsAccountedFor = 0;
-        uint16 year;
-        uint32 numLeapYears;
+    function _getYear(uint32 timestamp) internal pure returns (uint16) {
+        unchecked {
+            uint32 secondsAccountedFor = 0;
+            uint16 year;
+            uint32 numLeapYears;
 
-        // year
-        year = uint16(ORIGIN_YEAR + timestamp / YEAR_IN_SECONDS);
-        numLeapYears = _leapYearsBefore(year) - _leapYearsBefore(ORIGIN_YEAR);
+            year = uint16(ORIGIN_YEAR + timestamp / YEAR_IN_SECONDS);
+            numLeapYears = _leapYearsBefore(year) - _leapYearsBefore(ORIGIN_YEAR);
 
-        secondsAccountedFor += LEAP_YEAR_IN_SECONDS * numLeapYears;
-        secondsAccountedFor += YEAR_IN_SECONDS * (year - ORIGIN_YEAR - numLeapYears);
+            secondsAccountedFor += LEAP_YEAR_IN_SECONDS * numLeapYears;
+            secondsAccountedFor += YEAR_IN_SECONDS * (year - ORIGIN_YEAR - numLeapYears);
 
-        while (secondsAccountedFor > timestamp) {
-            if (_isLeapYear(uint16(year - 1))) {
-                secondsAccountedFor -= LEAP_YEAR_IN_SECONDS;
+            while (secondsAccountedFor > timestamp) {
+                if (_isLeapYear(uint16(year - 1))) {
+                    secondsAccountedFor -= LEAP_YEAR_IN_SECONDS;
+                }
+                else {
+                    secondsAccountedFor -= YEAR_IN_SECONDS;
+                }
+                year -= 1;
             }
-            else {
-                secondsAccountedFor -= YEAR_IN_SECONDS;
-            }
-            year -= 1;
+
+            return year;
         }
-
-        return year;
     }
 }
