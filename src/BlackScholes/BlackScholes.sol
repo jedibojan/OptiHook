@@ -34,20 +34,14 @@ library BlackScholes {
     int internal constant SCALE_SIGNED = 1e18;
     int internal constant SCALE_DOWN_SIGNED = 1e9;
 
-    function callPrice(
-        uint128 spot,
-        uint128 strike,
-        uint32 timeToExpirySec,
-        uint80 vol,
-        int80 rate
-    ) internal pure returns (uint price) {
-        uint timeToExpiryYear = _anualize(uint(timeToExpirySec));
-        uint spotPrecise = (uint (spot)).decimalToPreciseDecimal();
-        uint strikePrecise = (uint (strike)).decimalToPreciseDecimal();
-        int ratePrecise = (int (rate)).decimalToPreciseDecimal();
+    function callPrice(IBlackScholes.InputParams memory params) internal pure returns (uint price) {
+        uint timeToExpiryYear = _anualize(uint(params.secondsToExpiry));
+        uint spotPrecise = (uint (params.spot)).decimalToPreciseDecimal();
+        uint strikePrecise = (uint (params.strike)).decimalToPreciseDecimal();
+        int ratePrecise = (int (params.rate)).decimalToPreciseDecimal();
 
         (int d1, int d2) =
-        _d1d2(timeToExpiryYear, (uint (vol)).decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
+        _d1d2(timeToExpiryYear, (uint (params.volatility)).decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
 
         (uint callPrecise, ) = _prices(timeToExpiryYear, spotPrecise, strikePrecise, ratePrecise, d1, d2);
         price = callPrecise.preciseDecimalToDecimal();
@@ -57,20 +51,14 @@ library BlackScholes {
         }
     }
 
-    function putPrice(
-        uint128 spot,
-        uint128 strike,
-        uint32 timeToExpirySec,
-        uint80 vol,
-        int80 rate
-    ) internal pure returns (uint price) {
-        uint timeToExpiryYear = _anualize(uint(timeToExpirySec));
-        uint spotPrecise = (uint (spot)).decimalToPreciseDecimal();
-        uint strikePrecise = (uint (strike)).decimalToPreciseDecimal();
-        int ratePrecise = (int (rate)).decimalToPreciseDecimal();
+    function putPrice(IBlackScholes.InputParams memory params) internal pure returns (uint price) {
+        uint timeToExpiryYear = _anualize(uint(params.secondsToExpiry));
+        uint spotPrecise = (uint (params.spot)).decimalToPreciseDecimal();
+        uint strikePrecise = (uint (params.strike)).decimalToPreciseDecimal();
+        int ratePrecise = (int (params.rate)).decimalToPreciseDecimal();
 
         (int d1, int d2) =
-        _d1d2(timeToExpiryYear, (uint (vol)).decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
+        _d1d2(timeToExpiryYear, (uint (params.volatility)).decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
 
         (, uint putPrecise) = _prices(timeToExpiryYear, spotPrecise, strikePrecise, ratePrecise, d1, d2);
         price = putPrecise.preciseDecimalToDecimal();
@@ -82,26 +70,16 @@ library BlackScholes {
 
   /**
    * @dev Returns call and put option prices with given parameters.
-   * @param timeToExpirySec Number of seconds to the expiry
-   * @param vol Implied volatility (in decimal format)
-   * @param spot The current price of the underlying
-   * @param strike The strike price
-   * @param rate Risk-free rate (in decimal format)
+   * @param params Input parameters for the Black-Scholes calculation
    */
-  function prices(
-    uint timeToExpirySec,
-    uint vol,
-    uint spot,
-    uint strike,
-    int rate
-  ) internal pure returns (uint call, uint put) {
-    uint timeToExpiryYear = _anualize(timeToExpirySec);
-    uint spotPrecise = spot.decimalToPreciseDecimal();
-    uint strikePrecise = strike.decimalToPreciseDecimal();
-    int ratePrecise = rate.decimalToPreciseDecimal();
+  function prices(IBlackScholes.InputParams memory params) internal pure returns (uint call, uint put) {
+    uint timeToExpiryYear = _anualize(params.secondsToExpiry);
+    uint spotPrecise = params.spot.decimalToPreciseDecimal();
+    uint strikePrecise = params.strike.decimalToPreciseDecimal();
+    int ratePrecise = params.rate.decimalToPreciseDecimal();
 
     (int d1, int d2) =
-      _d1d2(timeToExpiryYear, vol.decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
+      _d1d2(timeToExpiryYear, params.volatility.decimalToPreciseDecimal(), spotPrecise, strikePrecise, ratePrecise);
     (uint callPrecise, uint putPrecise) = _prices(timeToExpiryYear, spotPrecise, strikePrecise, ratePrecise, d1, d2);
 
     call = callPrecise.preciseDecimalToDecimal();
@@ -118,36 +96,26 @@ library BlackScholes {
 
   /**
    * @dev Returns call/put prices and delta/vega for given parameters.
-   * @param timeToExpirySec Number of seconds to the expiry
-   * @param vol Implied volatility (in decimal format)
-   * @param spot The current price of the underlying
-   * @param strike The strike price
-   * @param rate Risk-free rate (in decimal format)
+   * @param params Input parameters for the Black-Scholes calculation
    */
-  function pricesAndGreeks(
-    uint timeToExpirySec,
-    uint vol,
-    uint spot,
-    uint strike,
-    int rate
-  ) internal pure returns (IBlackScholes.PricesAndGreeks memory) {
-    uint timeToExpiryYear = _anualize(timeToExpirySec);
-    uint spotPrecise = spot.decimalToPreciseDecimal();
+  function pricesAndGreeks(IBlackScholes.InputParams memory params) internal pure returns (IBlackScholes.PricesAndGreeks memory) {
+    uint timeToExpiryYear = _anualize(params.secondsToExpiry);
+    uint spotPrecise = params.spot.decimalToPreciseDecimal();
 
     (int d1, int d2) =
       _d1d2(
         timeToExpiryYear,
-        vol.decimalToPreciseDecimal(),
+        params.volatility.decimalToPreciseDecimal(),
         spotPrecise,
-        strike.decimalToPreciseDecimal(),
-        rate.decimalToPreciseDecimal()
+        params.strike.decimalToPreciseDecimal(),
+        params.rate.decimalToPreciseDecimal()
       );
     (uint callPrecise, uint putPrecise) =
       _prices(
         timeToExpiryYear,
         spotPrecise,
-        strike.decimalToPreciseDecimal(),
-        rate.decimalToPreciseDecimal(),
+        params.strike.decimalToPreciseDecimal(),
+        params.rate.decimalToPreciseDecimal(),
         d1,
         d2
       );
@@ -163,7 +131,7 @@ library BlackScholes {
         put = 1000000000;
     }
 
-    uint standardVega = _standardVega(d1, spotPrecise, timeToExpirySec);
+    uint standardVega = _standardVega(d1, spotPrecise, params.secondsToExpiry);
     (int callDelta, int putDelta) = _delta(d1);
 
     return

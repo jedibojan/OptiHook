@@ -10,4 +10,12 @@ interface IBlackScholes {
     int putDelta;
     uint vega;
   }
+
+  struct InputParams {
+    uint spot;
+    uint strike;
+    uint secondsToExpiry;
+    uint volatility;
+    int rate;
+  }
 }
