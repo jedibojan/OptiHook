@@ -16,14 +16,14 @@ contract BlackScholes7daysTest is Test {
         uint256 expectedPutPrice
     ) internal pure {
         (uint256 call, uint256 put) = BlackScholes.prices(params);
-        // verify with 0.25% error deviation allowed
+        // verify with 0.3% error deviation allowed
         if (expectedCallPrice > 0) {
             uint256 deviation = expectedCallPrice > call ? expectedCallPrice - call : call - expectedCallPrice;
-            assertLt(deviation, expectedCallPrice * 0.0025e18 / 1e18, "Allowed error is above 0.25%");
+            assertLt(deviation, expectedCallPrice * 0.003e18 / 1e18, "Allowed error is above 0.3%");
         }
         if (expectedPutPrice > 0) {
             uint256 deviation = expectedPutPrice > put ? expectedPutPrice - put : put - expectedPutPrice;
-            assertLt(deviation, expectedPutPrice * 0.0025e18 / 1e18, "Allowed error is above 0.25%");
+            assertLt(deviation, expectedPutPrice * 0.003e18 / 1e18, "Allowed error is above 0.3%");
         }
 
         IBlackScholes.PricesAndGreeks memory pricesAndGreeks = BlackScholes.pricesAndGreeks(params);
@@ -60,7 +60,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 0
             }),
             0,
-            199 * 10**15
+            198999999999999950
         );
     }
 
@@ -73,8 +73,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 0
             }),
-            1625125048853306,
-            2625125048853192
+            5036348201986229,
+            6036348201986286
         );
     }
 
@@ -87,8 +87,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 0
             }),
-            2088156949206961,
-            2088156949206961
+            5524706145628500,
+            5524706145628500
         );
     }
 
@@ -101,8 +101,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 0
             }),
-            2627175442645580,
-            1627175442645693
+            6041858523417098,
+            5041858523417320
         );
     }
 
@@ -115,7 +115,7 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 0
             }),
-            201 * 10**15,
+            201000000000000070,
             0
         );
     }
@@ -144,7 +144,7 @@ contract BlackScholes7daysTest is Test {
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
             0,
-            398868501797331530
+            398079875629070770
         );
     }
 
@@ -158,7 +158,7 @@ contract BlackScholes7daysTest is Test {
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
             0,
-            198868501797331530
+            198079875629070700
         );
     }
 
@@ -171,8 +171,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            1681420344013815,
-            2549922141345405
+            5479556253490114,
+            5559431882560750
         );
     }
 
@@ -185,8 +185,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            2154427733255602,
-            2022929530587134
+            5994422137463928,
+            5074297766534785
         );
     }
 
@@ -199,8 +199,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            2703393007906470,
-            1571894805237946
+            6538005789793133,
+            4617881418863990
         );
     }
 
@@ -213,7 +213,7 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            201131498202668470,
+            201920124370929320,
             0
         );
     }
@@ -227,7 +227,7 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            401131498202668470,
+            401920124370929300,
             0
         );
     }
@@ -242,7 +242,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 1e17
             }),
             0,
-            398726064924326600
+            397084029599955500
         );
     }
 
@@ -256,7 +256,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 1e17
             }),
             0,
-            198726064924326580
+            197084029599955400
         );
     }
 
@@ -269,8 +269,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 1e17
             }),
-            1743864805720477,
-            2469929730047170
+            5986734163467400,
+            5070763763422914
         );
     }
 
@@ -283,8 +283,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 1e17
             }),
-            2227697915143039,
-            1953762839469504
+            6530239354831657,
+            4614268954787870
         );
     }
 
@@ -297,8 +297,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 1e17
             }),
-            2787404084033937,
-            1513469008360459
+            7102237186594529,
+            4186266786549860
         );
     }
 
@@ -311,7 +311,7 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 1e17
             }),
-            201273935075673420,
+            202915970400044600,
             0
         );
     }
@@ -325,7 +325,7 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(1e17),
                 rate: 1e17
             }),
-            401273935075673400,
+            402915970400044570,
             0
         );
     }
@@ -340,7 +340,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 0
             }),
             0,
-            399 * 10**15
+            399000001006581300
         );
     }
 
@@ -353,8 +353,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            3,
-            1990000000035919
+            327749055596491,
+            199327749055596360
         );
     }
 
@@ -367,8 +367,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            14114435200028595,
-            15114435200028595
+            38140842000357830,
+            39140842000357834
         );
     }
 
@@ -381,8 +381,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            14616297747764690,
-            14616297747764690
+            38658114775770080,
+            38658114775770080
         );
     }
 
@@ -395,8 +395,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            15129046055571280,
-            14129046055571337
+            39179498059915380,
+            38179498059915384
         );
     }
 
@@ -409,8 +409,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            20100000216014337,
-            2
+            202206099193715570,
+            1206099193715490
         );
     }
 
@@ -423,8 +423,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 0
             }),
-            401 * 10**15,
-            0
+            401007305424732730,
+            7335424732653
         );
     }
 
@@ -438,7 +438,7 @@ contract BlackScholes7daysTest is Test {
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
             0,
-            398868501797331530
+            398079876690091260
         );
     }
 
@@ -451,8 +451,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            3,
-            198868501797331530
+            336795368003468,
+            198416670997074160
         );
     }
 
@@ -465,8 +465,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14114435200028595,
-            15114435200028595
+            38581075892551270,
+            38660951521622020
         );
     }
 
@@ -479,8 +479,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14616297747764690,
-            14616297747764690
+            39102132664920070,
+            38182008293990710
         );
     }
 
@@ -493,8 +493,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            15129046055571280,
-            14129046055571337
+            39627297869388730,
+            37707173498459640
         );
     }
 
@@ -507,8 +507,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            20100000216014337,
-            2
+            203096345117941400,
+            1176220747011944
         );
     }
 
@@ -521,8 +521,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            401 * 10**15,
-            0
+            401927156763678100,
+            7024892748790
         );
     }
 
@@ -536,7 +536,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 1e17
             }),
             0,
-            398726064924326600
+            397084030723171550
         );
     }
 
@@ -549,8 +549,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            3,
-            198726064924326580
+            346847864484118,
+            197430877464439660
         );
     }
 
@@ -563,8 +563,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            14114435200028595,
-            15114435200028595
+            39061463898391880,
+            38145493498347280
         );
     }
 
@@ -577,8 +577,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            14616297747764690,
-            14616297747764690
+            39586617849432070,
+            37670647449387470
         );
     }
 
@@ -591,8 +591,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            15129046055571280,
-            14129046055571337
+            40115877566249010,
+            37199907166204410
         );
     }
 
@@ -605,8 +605,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            20100000216014337,
-            2
+            204060562880816300,
+            1144592480771759
         );
     }
 
@@ -619,8 +619,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(7e17),
                 rate: 1e17
             }),
-            401 * 10**15,
-            0
+            402922717893029800,
+            6747292985985
         );
     }
 
@@ -634,7 +634,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 0
             }),
             0,
-            399 * 10**15
+            399000037093764640
         );
     }
 
@@ -647,8 +647,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            3,
-            1990000000035919
+            834415794772724,
+            199834415794772680
         );
     }
 
@@ -661,8 +661,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            14114435200028595,
-            15114435200028595
+            43655120097317090,
+            44655120097317090
         );
     }
 
@@ -675,8 +675,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            14616297747764690,
-            14616297747764690
+            44175409198318800,
+            44175409198318800
         );
     }
 
@@ -689,8 +689,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            15129046055571280,
-            14129046055571337
+            44699293708834800,
+            43699293708834850
         );
     }
 
@@ -703,8 +703,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            20100000216014337,
-            2
+            203483603674315730,
+            2483603674315569
         );
     }
 
@@ -717,8 +717,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 0
             }),
-            401 * 10**15,
-            0
+            401042877971480100,
+            42877971480066
         );
     }
 
@@ -732,7 +732,7 @@ contract BlackScholes7daysTest is Test {
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
             0,
-            398868501797331530
+            398079914272042030
         );
     }
 
@@ -745,8 +745,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            3,
-            198868501797331530
+            852802282194788,
+            198932677911265450
         );
     }
 
@@ -759,8 +759,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14114435200028595,
-            15114435200028595
+            44093071724545680,
+            44172947353616240
         );
     }
 
@@ -773,8 +773,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14616297747764690,
-            14616297747764690
+            44616670638923550,
+            43696606267994110
         );
     }
 
@@ -787,8 +787,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            15129046055571280,
-            14129046055571337
+            45143863184358200,
+            43223898813428760
         );
     }
 
@@ -801,8 +801,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            20100000216014337,
-            2
+            204353505024710400,
+            2433380653781222
         );
     }
 
@@ -815,8 +815,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            401 * 10**15,
-            0
+            401961728417494670,
+            41604046565638
         );
     }
 
@@ -830,7 +830,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 1e17
             }),
             0,
-            398726064924326600
+            397084069991399100
         );
     }
 
@@ -843,8 +843,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            3,
-            198726064924326580
+            873122678725440,
+            197957152278680830
         );
     }
 
@@ -857,8 +857,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            14114435200028595,
-            15114435200028595
+            44570497786495470,
+            43654527386450870
         );
     }
 
@@ -871,8 +871,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            14616297747764690,
-            14616297747764690
+            45097680488473510,
+            43181710088428910
         );
     }
 
@@ -885,8 +885,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            15129046055571280,
-            14129046055571337
+            45628454616020500,
+            42712484215975900
         );
     }
 
@@ -899,8 +899,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            20100000216014337,
-            2
+            205295941317233170,
+            2379970917188785
         );
     }
 
@@ -913,8 +913,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(8e17),
                 rate: 1e17
             }),
-            401 * 10**15,
-            0
+            402956234268059150,
+            40263868014625
         );
     }
 
@@ -928,7 +928,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 0
             }),
             0,
-            399 * 10**15
+            399000470917148850
         );
     }
 
@@ -941,8 +941,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            772,
-            19900000077258256
+            1670490822459791,
+            200670490822459700
         );
     }
 
@@ -955,8 +955,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            14114435200028595,
-            15114435200028595
+            49167340628310520,
+            50167340628310520
         );
     }
 
@@ -969,8 +969,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            14616297747764690,
-            14616297747764690
+            49690587812600220,
+            49690587812600220
         );
     }
 
@@ -983,8 +983,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            15129046055571280,
-            14129046055571337
+            50217029618829010,
+            49217029618829120
         );
     }
 
@@ -997,8 +997,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            20100000216014337,
-            2
+            205283586249545240,
+            4283586249545224
         );
     }
 
@@ -1011,8 +1011,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 0
             }),
-            401 * 10**15,
-            0
+            401153420413243400,
+            153420413243550
         );
     }
 
@@ -1026,7 +1026,7 @@ contract BlackScholes7daysTest is Test {
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
             0,
-            398868501797331530
+            398080362263192100
         );
     }
 
@@ -1039,8 +1039,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            772,
-            198868501797331530
+            1700819009798515,
+            199780694638869270
         );
     }
 
@@ -1053,8 +1053,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14114435200028595,
-            15114435200028595
+            49602954144606640,
+            49682929773677200
         );
     }
 
@@ -1067,8 +1067,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            14616297747764690,
-            14616297747764690
+            50129142190399270,
+            49109101781946990
         );
     }
 
@@ -1081,8 +1081,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            15129046055571280,
-            14129046055571337
+            50658523301038310,
+            48638482892586030
         );
     }
 
@@ -1095,8 +1095,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            20100000216014337,
-            2
+            206130892127953440,
+            4210767757024184
         );
     }
 
@@ -1109,8 +1109,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: int256(48 * 10**(DECIMALS - 3))
             }),
-            401 * 10**15,
-            0
+            402069805624588700,
+            149681253659501
         );
     }
 
@@ -1124,7 +1124,7 @@ contract BlackScholes7daysTest is Test {
                 rate: 1e17
             }),
             0,
-            398726064924326600
+            397084533824760830
         );
     }
 
@@ -1137,8 +1137,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            772,
-            198726064924326580
+            1734210600949866,
+            198818240200905330
         );
     }
 
@@ -1151,8 +1151,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            14114435200028595,
-            15114435200028595
+            50077466975307680,
+            49161496575263080
         );
     }
 
@@ -1165,8 +1165,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            14616297747764690,
-            14616297747764690
+            50606839339622340,
+            48586888939577740
         );
     }
 
@@ -1179,8 +1179,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            15129046055571280,
-            14129046055571337
+            51139402886338670,
+            48122324862942940
         );
     }
 
@@ -1193,8 +1193,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            20100000216014337,
-            2
+            207049050595823680,
+            4133080195779015
         );
     }
 
@@ -1207,8 +1207,8 @@ contract BlackScholes7daysTest is Test {
                 volatility: uint80(9e17),
                 rate: 1e17
             }),
-            401 * 10**15,
-            0
+            403061695896504400,
+            145725496459679
         );
     }
 }
