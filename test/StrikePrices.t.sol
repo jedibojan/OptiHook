@@ -135,13 +135,12 @@ contract StrikePricesTest is Test {
         expectedStrikes[19] = 295 * 10**18;
         expectedStrikes[20] = 300 * 10**18;
         expectedStrikes[21] = 305 * 10**18;
-        expectedStrikes[22] = 315 * 10**18;
-        expectedStrikes[23] = 325 * 10**18;
-        expectedStrikes[24] = 335 * 10**18;
+        expectedStrikes[22] = 310 * 10**18;
+        expectedStrikes[23] = 315 * 10**18;
+        expectedStrikes[24] = 320 * 10**18;
         
         for (uint256 i = 0; i < strikes.length; i++) {
-            // assertEq(strikes[i], expectedStrikes[i]);
-            console2.log(strikes[i] / 10**18);
+            assertEq(strikes[i], expectedStrikes[i]);
         }
     }
 
