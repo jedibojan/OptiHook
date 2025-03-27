@@ -36,24 +36,45 @@ This document outlines a detailed, step-by-step plan for implementing the projec
 ## **StrikePrices Smart Contract**
 - **Purpose**: Manages the available strike prices for option markets, defining the price levels at which options can be exercised.
 - **Key Features**:
-  - Restricted access to adding/removing strike prices (e.g., only the owner).
   - Strike prices should be more condensed around current ATM price
   - Ability to query available strike prices.
 - **Implementation Details**:
-  - Use OpenZeppelin's `Ownable` for access control.
   - Store strike prices as `uint256` values in an array or mapping.
   - Ensure strike prices are positive numbers.
+  - Strike price range calculation:
+    1. Determine time category based on days to expiration:
+       - Category 0: 0-3 days
+       - Category 1: 4-21 days
+       - Category 2: 22-90 days
+       - Category 3: 91-180 days
+       - Category 4: 181+ days
+    2. For each category, use predefined range factors:
+       - Category 0: 85 (0.85)
+       - Category 1: 70 (0.70)
+       - Category 2: 50 (0.50)
+       - Category 3: 30 (0.30)
+       - Category 4: 20 (0.20)
+    3. Calculate min and max strike prices:
+       - minStrike = currentPrice * rangeFactor / 100
+       - maxStrike = currentPrice * 100 / rangeFactor
+  - Base interval determination rules:
+    1. Calculate target interval as (maxStrikePrice - minStrikePrice) / 15
+    2. Normalize target interval by determining appropriate power of 10
+    3. Find closest standard interval from [25, 50, 100]
+    4. When exactly between two intervals, prefer the lower one
+    5. Apply power of 10 back to get final increment
+  - Time-based categories for strike price ranges:
+    - Category 0 (0-3 days): 85% - 117.65% of current price
+    - Category 1 (4-21 days): 70% - 142.86% of current price
+    - Category 2 (22-90 days): 50% - 200% of current price
+    - Category 3 (91-180 days): 30% - 333.33% of current price
+    - Category 4 (181+ days): 20% - 500% of current price
 - **Functions**:
-  - `addStrikePrices(uint256 price)`: Adds strike prices, callable only by the owner.
-  - `updateStrikePrices(uint256 price)`: Updates strike prices, callable only by the owner.
   - `getStrikePrices()`: Returns an array of all available strike prices (view function).
   - `isStrikePriceAvailable(uint256 price)`: Checks if a specific strike price exists (view function).
+  - `areStrikePricesAvailable(uint256[] memory prices)`: Checks if strike prices exists (view function).
 - **TDD Approach**:
   - Write tests:
-    - Adding a strike price by the owner succeeds.
-    - Adding by a non-owner fails.
-    - Updating strike prices by the owner succeeds.
-    - Updating strike prices by non-owner reverts.
     - Querying returns the correct list of strike prices.
     - Availability check returns true/false correctly.
   - Implement the contract to pass all tests.
