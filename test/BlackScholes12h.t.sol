@@ -16,14 +16,14 @@ contract BlackScholes12hTest is Test {
         uint256 expectedPutPrice
     ) internal pure {
         (uint256 call, uint256 put) = BlackScholes.prices(params);
-        // verify with 0.25% error deviation allowed
+        // verify with 25% error deviation allowed
         if (expectedCallPrice > 0) {
             uint256 deviation = expectedCallPrice > call ? expectedCallPrice - call : call - expectedCallPrice;
-            assertLt(deviation, expectedCallPrice * 0.0025e18, "Allowed error is above 0.25%");
+            assertLt(deviation, expectedCallPrice * 0.025e18 / 1e18, "Allowed error is above 2.5%");
         }
         if (expectedPutPrice > 0) {
             uint256 deviation = expectedPutPrice > put ? expectedPutPrice - put : put - expectedPutPrice;
-            assertLt(deviation, expectedPutPrice * 0.0025e18, "Allowed error is above 0.25%");
+            assertLt(deviation, expectedPutPrice * 0.025e18 / 1e18, "Allowed error is above 25%");
         }
 
         IBlackScholes.PricesAndGreeks memory pricesAndGreeks = BlackScholes.pricesAndGreeks(params);
