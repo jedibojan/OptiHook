@@ -6,7 +6,6 @@ import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
 import {StrikePrices} from "../src/StrikePrices.sol";
 
-// 192, 273.2, 100, 400, 754, 9950, 11000, 2000, 10000000, 48000
 contract StrikePricesTest is Test {
     using StrikePrices for *;
 
@@ -34,10 +33,10 @@ contract StrikePricesTest is Test {
     ];
 
     uint32[] private timeIntervals = [
-        2 days     // 2 days
-        // 14 days,     // 2 weeks
-        // 60 days,     // 2 months
-        // 180 days,     // 6 months
+        // 2 days     // 2 days
+        // 14 days     // 2 weeks
+        60 days     // 2 months
+        // 160 days,     // 6 months
         // 200 days     // 6.5 months
     ];
 
@@ -57,28 +56,28 @@ contract StrikePricesTest is Test {
 
     uint32 private constant TWO_DAYS = 2 days;
 
-    // function testPrintStrikePrices() public view {
-    //     uint32 currentTimestamp = uint32(block.timestamp);
+    function testPrintStrikePrices() public view {
+        uint32 currentTimestamp = uint32(block.timestamp);
 
-    //     for (uint256 i = 0; i < currentPrices.length; i++) {
-    //         uint256 currentPrice = currentPrices[i];
-    //         console2.log("\n=== Current Price:", currentPrice / 10**18, "===");
+        for (uint256 i = 0; i < currentPrices.length; i++) {
+            uint256 currentPrice = currentPrices[i];
+            console2.log("\n=== Current Price:", currentPrice / 10**18, "===");
 
-    //         for (uint256 j = 0; j < timeIntervals.length; j++) {
-    //             uint32 expirationTime = currentTimestamp + timeIntervals[j];
-    //             console2.log("\nTime to expiration:", timeIntervals[j] / 1 days, "days");
+            for (uint256 j = 0; j < timeIntervals.length; j++) {
+                uint32 expirationTime = currentTimestamp + timeIntervals[j];
+                console2.log("\nTime to expiration:", timeIntervals[j] / 1 days, "days");
 
-    //             uint256[] memory strikes = StrikePrices.getStrikePrices(currentPrice, expirationTime);
+                uint256[] memory strikes = StrikePrices.getStrikePrices(currentPrice, expirationTime);
             
                 
-    //             console2.log("Number of strikes:", strikes.length);
-    //             console2.log("Strike prices:");
-    //             for (uint256 k = 0; k < strikes.length; k++) {
-    //                 console2.log(strikes[k] / 10**18);
-    //             }
-    //         }
-    //     }
-    // }
+                console2.log("Number of strikes:", strikes.length);
+                console2.log("Strike prices:");
+                for (uint256 k = 0; k < strikes.length; k++) {
+                    console2.log(strikes[k] / 10**18);
+                }
+            }
+        }
+    }
 
     function testCategory0StrikePrice192() public view {
         uint32 expirationTime = uint32(block.timestamp) + 2 days;
@@ -362,6 +361,271 @@ contract StrikePricesTest is Test {
         
         for (uint256 i = 0; i < strikes.length; i++) {
             assertEq(strikes[i], expectedStrikes[i], "Incorrect strike price");
+        }
+    }
+
+    function testCategory1StrikePrice192() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(192 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 22);
+        
+        uint256[] memory expectedStrikes = new uint256[](22);
+        // Fine-grained strikes from minStrike (135) to 110% of ATM (210)
+        expectedStrikes[0] = 135 * 10**18;
+        expectedStrikes[1] = 140 * 10**18;
+        expectedStrikes[2] = 145 * 10**18;
+        expectedStrikes[3] = 150 * 10**18;
+        expectedStrikes[4] = 155 * 10**18;
+        expectedStrikes[5] = 160 * 10**18;
+        expectedStrikes[6] = 165 * 10**18;
+        expectedStrikes[7] = 170 * 10**18;
+        expectedStrikes[8] = 175 * 10**18;
+        expectedStrikes[9] = 180 * 10**18;
+        expectedStrikes[10] = 185 * 10**18;
+        expectedStrikes[11] = 190 * 10**18;
+        expectedStrikes[12] = 195 * 10**18;
+        expectedStrikes[13] = 200 * 10**18;
+        expectedStrikes[14] = 205 * 10**18;
+        expectedStrikes[15] = 210 * 10**18;
+        // Coarse-grained strikes from 220 to maxStrike (270) with 2x increment
+        expectedStrikes[16] = 220 * 10**18;
+        expectedStrikes[17] = 230 * 10**18;
+        expectedStrikes[18] = 240 * 10**18;
+        expectedStrikes[19] = 250 * 10**18;
+        expectedStrikes[20] = 260 * 10**18;
+        expectedStrikes[21] = 270 * 10**18;
+        
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], "Incorrect strike price");
+        }
+    }
+
+    function testCategory1StrikePrice273_2() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(2732 * 10**17, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 32);
+        uint256[] memory expectedStrikes = new uint256[](32);
+        expectedStrikes[0] = 190 * 10**18;
+        expectedStrikes[1] = 195 * 10**18;
+        expectedStrikes[2] = 200 * 10**18;
+        expectedStrikes[3] = 205 * 10**18;
+        expectedStrikes[4] = 210 * 10**18;
+        expectedStrikes[5] = 215 * 10**18;
+        expectedStrikes[6] = 220 * 10**18;
+        expectedStrikes[7] = 225 * 10**18;
+        expectedStrikes[8] = 230 * 10**18;
+        expectedStrikes[9] = 235 * 10**18;
+        expectedStrikes[10] = 240 * 10**18;
+        expectedStrikes[11] = 245 * 10**18;
+        expectedStrikes[12] = 250 * 10**18;
+        expectedStrikes[13] = 255 * 10**18;
+        expectedStrikes[14] = 260 * 10**18;
+        expectedStrikes[15] = 265 * 10**18;
+        expectedStrikes[16] = 270 * 10**18;
+        expectedStrikes[17] = 275 * 10**18;
+        expectedStrikes[18] = 280 * 10**18;
+        expectedStrikes[19] = 285 * 10**18;
+        expectedStrikes[20] = 290 * 10**18;
+        expectedStrikes[21] = 295 * 10**18;
+        expectedStrikes[22] = 300 * 10**18;
+        expectedStrikes[23] = 305 * 10**18;
+        expectedStrikes[24] = 315 * 10**18;
+        expectedStrikes[25] = 325 * 10**18;
+        expectedStrikes[26] = 335 * 10**18;
+        expectedStrikes[27] = 345 * 10**18;
+        expectedStrikes[28] = 355 * 10**18;
+        expectedStrikes[29] = 365 * 10**18;
+        expectedStrikes[30] = 375 * 10**18;
+        expectedStrikes[31] = 385 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice400() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(400 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 23);
+        uint256[] memory expectedStrikes = new uint256[](23);
+        expectedStrikes[0] = 280 * 10**18;
+        expectedStrikes[1] = 290 * 10**18;
+        expectedStrikes[2] = 300 * 10**18;
+        expectedStrikes[3] = 310 * 10**18;
+        expectedStrikes[4] = 320 * 10**18;
+        expectedStrikes[5] = 330 * 10**18;
+        expectedStrikes[6] = 340 * 10**18;
+        expectedStrikes[7] = 350 * 10**18;
+        expectedStrikes[8] = 360 * 10**18;
+        expectedStrikes[9] = 370 * 10**18;
+        expectedStrikes[10] = 380 * 10**18;
+        expectedStrikes[11] = 390 * 10**18;
+        expectedStrikes[12] = 400 * 10**18;
+        expectedStrikes[13] = 410 * 10**18;
+        expectedStrikes[14] = 420 * 10**18;
+        expectedStrikes[15] = 430 * 10**18;
+        expectedStrikes[16] = 440 * 10**18;
+        expectedStrikes[17] = 460 * 10**18;
+        expectedStrikes[18] = 480 * 10**18;
+        expectedStrikes[19] = 500 * 10**18;
+        expectedStrikes[20] = 520 * 10**18;
+        expectedStrikes[21] = 540 * 10**18;
+        expectedStrikes[22] = 560 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice754() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(754 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 18);
+        uint256[] memory expectedStrikes = new uint256[](18);
+        expectedStrikes[0] = 525 * 10**18;
+        expectedStrikes[1] = 550 * 10**18;
+        expectedStrikes[2] = 575 * 10**18;
+        expectedStrikes[3] = 600 * 10**18;
+        expectedStrikes[4] = 625 * 10**18;
+        expectedStrikes[5] = 650 * 10**18;
+        expectedStrikes[6] = 675 * 10**18;
+        expectedStrikes[7] = 700 * 10**18;
+        expectedStrikes[8] = 725 * 10**18;
+        expectedStrikes[9] = 750 * 10**18;
+        expectedStrikes[10] = 775 * 10**18;
+        expectedStrikes[11] = 800 * 10**18;
+        expectedStrikes[12] = 825 * 10**18;
+        expectedStrikes[13] = 875 * 10**18;
+        expectedStrikes[14] = 925 * 10**18;
+        expectedStrikes[15] = 975 * 10**18;
+        expectedStrikes[16] = 1025 * 10**18;
+        expectedStrikes[17] = 1075 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice9950() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(9950 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 23);
+        uint256[] memory expectedStrikes = new uint256[](23);
+        expectedStrikes[0] = 7000 * 10**18;
+        expectedStrikes[1] = 7250 * 10**18;
+        expectedStrikes[2] = 7500 * 10**18;
+        expectedStrikes[3] = 7750 * 10**18;
+        expectedStrikes[4] = 8000 * 10**18;
+        expectedStrikes[5] = 8250 * 10**18;
+        expectedStrikes[6] = 8500 * 10**18;
+        expectedStrikes[7] = 8750 * 10**18;
+        expectedStrikes[8] = 9000 * 10**18;
+        expectedStrikes[9] = 9250 * 10**18;
+        expectedStrikes[10] = 9500 * 10**18;
+        expectedStrikes[11] = 9750 * 10**18;
+        expectedStrikes[12] = 10000 * 10**18;
+        expectedStrikes[13] = 10250 * 10**18;
+        expectedStrikes[14] = 10500 * 10**18;
+        expectedStrikes[15] = 10750 * 10**18;
+        expectedStrikes[16] = 11000 * 10**18;
+        expectedStrikes[17] = 11500 * 10**18;
+        expectedStrikes[18] = 12000 * 10**18;
+        expectedStrikes[19] = 12500 * 10**18;
+        expectedStrikes[20] = 13000 * 10**18;
+        expectedStrikes[21] = 13500 * 10**18;
+        expectedStrikes[22] = 14000 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice11000() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(11000 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 25);
+        uint256[] memory expectedStrikes = new uint256[](25);
+        expectedStrikes[0] = 7750 * 10**18;
+        expectedStrikes[1] = 8000 * 10**18;
+        expectedStrikes[2] = 8250 * 10**18;
+        expectedStrikes[3] = 8500 * 10**18;
+        expectedStrikes[4] = 8750 * 10**18;
+        expectedStrikes[5] = 9000 * 10**18;
+        expectedStrikes[6] = 9250 * 10**18;
+        expectedStrikes[7] = 9500 * 10**18;
+        expectedStrikes[8] = 9750 * 10**18;
+        expectedStrikes[9] = 10000 * 10**18;
+        expectedStrikes[10] = 10250 * 10**18;
+        expectedStrikes[11] = 10500 * 10**18;
+        expectedStrikes[12] = 10750 * 10**18;
+        expectedStrikes[13] = 11000 * 10**18;
+        expectedStrikes[14] = 11250 * 10**18;
+        expectedStrikes[15] = 11500 * 10**18;
+        expectedStrikes[16] = 11750 * 10**18;
+        expectedStrikes[17] = 12000 * 10**18;
+        expectedStrikes[18] = 12500 * 10**18;
+        expectedStrikes[19] = 13000 * 10**18;
+        expectedStrikes[20] = 13500 * 10**18;
+        expectedStrikes[21] = 14000 * 10**18;
+        expectedStrikes[22] = 14500 * 10**18;
+        expectedStrikes[23] = 15000 * 10**18;
+        expectedStrikes[24] = 15500 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice2000() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(2000 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 23);
+        uint256[] memory expectedStrikes = new uint256[](23);
+        expectedStrikes[0] = 1400 * 10**18;
+        expectedStrikes[1] = 1450 * 10**18;
+        expectedStrikes[2] = 1500 * 10**18;
+        expectedStrikes[3] = 1550 * 10**18;
+        expectedStrikes[4] = 1600 * 10**18;
+        expectedStrikes[5] = 1650 * 10**18;
+        expectedStrikes[6] = 1700 * 10**18;
+        expectedStrikes[7] = 1750 * 10**18;
+        expectedStrikes[8] = 1800 * 10**18;
+        expectedStrikes[9] = 1850 * 10**18;
+        expectedStrikes[10] = 1900 * 10**18;
+        expectedStrikes[11] = 1950 * 10**18;
+        expectedStrikes[12] = 2000 * 10**18;
+        expectedStrikes[13] = 2050 * 10**18;
+        expectedStrikes[14] = 2100 * 10**18;
+        expectedStrikes[15] = 2150 * 10**18;
+        expectedStrikes[16] = 2200 * 10**18;
+        expectedStrikes[17] = 2300 * 10**18;
+        expectedStrikes[18] = 2400 * 10**18;
+        expectedStrikes[19] = 2500 * 10**18;
+        expectedStrikes[20] = 2600 * 10**18;
+        expectedStrikes[21] = 2700 * 10**18;
+        expectedStrikes[22] = 2800 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
+        }
+    }
+
+    function testCategory1StrikePrice10000000() public view {
+        uint256[] memory strikes = StrikePrices.getStrikePrices(10000000 * 10**18, uint32(block.timestamp + 14 days));
+        assertEq(strikes.length, 23);
+        uint256[] memory expectedStrikes = new uint256[](23);
+        expectedStrikes[0] = 7000000 * 10**18;
+        expectedStrikes[1] = 7250000 * 10**18;
+        expectedStrikes[2] = 7500000 * 10**18;
+        expectedStrikes[3] = 7750000 * 10**18;
+        expectedStrikes[4] = 8000000 * 10**18;
+        expectedStrikes[5] = 8250000 * 10**18;
+        expectedStrikes[6] = 8500000 * 10**18;
+        expectedStrikes[7] = 8750000 * 10**18;
+        expectedStrikes[8] = 9000000 * 10**18;
+        expectedStrikes[9] = 9250000 * 10**18;
+        expectedStrikes[10] = 9500000 * 10**18;
+        expectedStrikes[11] = 9750000 * 10**18;
+        expectedStrikes[12] = 10000000 * 10**18;
+        expectedStrikes[13] = 10250000 * 10**18;
+        expectedStrikes[14] = 10500000 * 10**18;
+        expectedStrikes[15] = 10750000 * 10**18;
+        expectedStrikes[16] = 11000000 * 10**18;
+        expectedStrikes[17] = 11500000 * 10**18;
+        expectedStrikes[18] = 12000000 * 10**18;
+        expectedStrikes[19] = 12500000 * 10**18;
+        expectedStrikes[20] = 13000000 * 10**18;
+        expectedStrikes[21] = 13500000 * 10**18;
+        expectedStrikes[22] = 14000000 * 10**18;
+        for (uint256 i = 0; i < strikes.length; i++) {
+            assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
         }
     }
 } 
