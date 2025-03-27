@@ -38,9 +38,7 @@ library StrikePrices {
         // Get lower and upper bounds of strike price
         (uint256 minStrike, uint256 maxStrike) = _calculateStrikeRange(currentPrice, category);
 
-        // Calculate target as (maxStrikePrice - minStrikePrice) / 15
-        uint256 target = (maxStrike - minStrike) / 15;
-        uint256 increment = _findClosestIncrement(target);
+        uint256 increment = _findClosestIncrement(currentPrice);
 
         // Calculate starting strike price (nearest to current price)
         uint256 startStrike = _round(currentPrice, increment);
@@ -50,6 +48,18 @@ library StrikePrices {
         // For Category 0, use special strike price generation
         if (category == 0) {
             return _generateCategory0StrikePrices(startStrike, minStrike, maxStrike, increment);
+        }
+        // For Category 1, use two-tier strike price generation - increment and increment * 2
+        if (category == 1) {
+            return _generateCategory1StrikePrices(startStrike, minStrike, maxStrike, increment);
+        }
+        // For Category 2, use teo-tier strike price generation - increment * 2 and increment * 4
+        if (category == 2) {
+            return _generateCategory2StrikePrices(startStrike, minStrike, maxStrike, increment);
+        }
+        // For Category 3, use two-tier strike price generation - increment * 4 and increment * 8
+        if (category == 3) {
+            return _generateCategory3StrikePrices(startStrike, minStrike, maxStrike, increment);
         }
 
         // For other categories, use standard generation
@@ -70,7 +80,7 @@ library StrikePrices {
         }
     }
 
-    function _findClosestIncrement(uint256 target) 
+    function _findClosestIncrement(uint256 currentPrice) 
         internal 
         pure 
         returns (uint256 baseIncrement) 
@@ -80,24 +90,27 @@ library StrikePrices {
         standardIncrements[1] = 50;
         standardIncrements[2] = 100;
 
-        // Calculate initial target interval
-        uint256 targetInterval = target;
-        while (targetInterval > standardIncrements[2]) {
+        (uint256 minStrike, uint256 maxStrike) = _calculateStrikeRange(currentPrice, 0);
+        // Calculate target as (maxStrikePrice - minStrikePrice) / 15
+        uint256 target = (maxStrike - minStrike) / 15;
+
+        while (target > standardIncrements[2]) {
             standardIncrements[0] *= 10;
             standardIncrements[1] *= 10;
             standardIncrements[2] *= 10;
         }
 
-        uint256 minDiff = targetInterval;
+
+        uint256 minDiff = target;
         uint256 length = standardIncrements.length;
-        if (targetInterval < standardIncrements[0]) {
+        if (target < standardIncrements[0]) {
             baseIncrement = standardIncrements[0];
         } else {            
             for (uint256 i = 0; i < length; i++) {
                 uint256 scaledIncrement = standardIncrements[i];
-                uint256 diff = scaledIncrement > targetInterval 
-                    ? scaledIncrement - targetInterval 
-                    : targetInterval - scaledIncrement;
+                uint256 diff = scaledIncrement > target 
+                    ? scaledIncrement - target 
+                    : target - scaledIncrement;
                 if (diff < minDiff) {
                     minDiff = diff;
                     baseIncrement = scaledIncrement;
@@ -191,6 +204,123 @@ library StrikePrices {
         }
 
         return strikePrices;
+    }
+
+    function _generateCategory1StrikePrices(
+        uint256 startStrike,
+        uint256 minStrike,
+        uint256 maxStrike,
+        uint256 baseIncrement
+    ) internal pure returns (uint256[] memory) {
+        // Calculate fine-grained upper boundary (110% of ATM)
+        uint256 fineGrainedUpperBound = _round(startStrike * 110 / 100, baseIncrement);
+        
+        // If fine-grained upper bound exceeds maxStrike, adjust it
+        if (fineGrainedUpperBound > maxStrike) {
+            fineGrainedUpperBound = maxStrike;
+        }
+        
+        // Calculate coarse-grained increment (2x base increment)
+        uint256 coarseIncrement = baseIncrement * 2;
+        
+        // Calculate number of strikes in each range
+        uint256 fineGrainedStrikes = (fineGrainedUpperBound - minStrike) / baseIncrement + 1;
+        uint256 coarseGrainedStrikes = 0;
+        
+        // Calculate coarse-grained strikes starting from fineGrainedUpperBound + coarseIncrement
+        if (fineGrainedUpperBound < maxStrike) {
+            uint256 firstCoarseStrike = fineGrainedUpperBound + coarseIncrement;
+            coarseGrainedStrikes = ((maxStrike - firstCoarseStrike) / coarseIncrement) + 1;
+        }
+        
+        uint256 totalStrikes = fineGrainedStrikes + coarseGrainedStrikes;
+        uint256[] memory strikePrices = new uint256[](totalStrikes);
+        uint256 currentIndex = 0;
+        
+        // Generate fine-grained strikes (base increment)
+        for (uint256 i = 0; i < fineGrainedStrikes; i++) {
+            strikePrices[currentIndex++] = minStrike + i * baseIncrement;
+        }
+        
+        // Generate coarse-grained strikes (2x increment), starting from fineGrainedUpperBound + coarseIncrement
+        if (coarseGrainedStrikes > 0) {
+            uint256 firstCoarseStrike = fineGrainedUpperBound + coarseIncrement;
+            for (uint256 i = 0; i < coarseGrainedStrikes; i++) {
+                strikePrices[currentIndex++] = firstCoarseStrike + i * coarseIncrement;
+            }
+        }
+        
+        return strikePrices;
+    }
+
+    function _generateCategory2StrikePrices(
+        uint256 startStrike,
+        uint256 minStrike,
+        uint256 maxStrike,
+        uint256 baseIncrement
+    ) internal pure returns (uint256[] memory) {
+        // Round minStrike using baseIncrement * 2
+        minStrike = _round(minStrike, baseIncrement * 2);
+        
+        // Calculate boundaries
+        uint256 fineUpperBound = _round(startStrike * 120 / 100, baseIncrement * 2); // 120% of startStrike
+        
+        // Ensure boundaries don't exceed maxStrike
+        if (fineUpperBound > maxStrike) fineUpperBound = maxStrike;
+        
+        // Calculate number of strikes in each range
+        uint256 fineStrikes = (fineUpperBound - minStrike) / (baseIncrement * 2) + 1; // 2x increment
+        uint256 coarseStrikes = (maxStrike - fineUpperBound) / (baseIncrement * 4) + 1; // 4x increment
+        
+        // Initialize strike prices array
+        uint256[] memory strikes = new uint256[](fineStrikes + coarseStrikes);
+        
+        // Generate fine-grained strikes (2x increment)
+        for (uint256 i = 0; i < fineStrikes; i++) {
+            strikes[i] = minStrike + (i * baseIncrement * 2);
+        }
+        
+        // Generate coarse-grained strikes (4x increment)
+        for (uint256 i = 0; i < coarseStrikes; i++) {
+            strikes[fineStrikes + i] = fineUpperBound + (i * baseIncrement * 4);
+        }
+        
+        return strikes;
+    }
+
+    function _generateCategory3StrikePrices(
+        uint256 startStrike,
+        uint256 minStrike,
+        uint256 maxStrike,
+        uint256 baseIncrement
+    ) internal pure returns (uint256[] memory) {
+        // Round minStrike using baseIncrement * 4
+        minStrike = _round(minStrike, baseIncrement * 4);
+        
+        // Calculate boundaries
+        uint256 fineUpperBound = _round(startStrike * 120 / 100, baseIncrement * 4); // 120% of startStrike
+        
+        // Ensure boundaries don't exceed maxStrike
+        if (fineUpperBound > maxStrike) fineUpperBound = maxStrike;
+        
+        // Calculate number of strikes in each range
+        uint256 fineStrikes = (fineUpperBound - minStrike) / (baseIncrement * 4) + 1; // 4x increment
+        uint256 coarseStrikes = (maxStrike - fineUpperBound) / (baseIncrement * 8) + 1; // 8x increment
+        
+        // Initialize strike prices array
+        uint256[] memory strikes = new uint256[](fineStrikes + coarseStrikes);
+        
+        // Generate fine-grained strikes (4x increment)
+        for (uint256 i = 0; i < fineStrikes; i++) {
+            strikes[i] = minStrike + (i * baseIncrement * 4);
+        }
+        
+        // Generate coarse-grained strikes (8x increment)
+        for (uint256 i = 0; i < coarseStrikes; i++) {
+            strikes[fineStrikes + i] = fineUpperBound + (i * baseIncrement * 8);
+        }
+        
+        return strikes;
     }
 
     function _round(uint256 number, uint256 interval) private pure returns(uint256) {
