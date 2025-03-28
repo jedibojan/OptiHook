@@ -54,8 +54,6 @@ contract StrikePricesTest is Test {
         48000 * 10**18     // 48000
     ];
 
-    uint32 private constant TWO_DAYS = 2 days;
-
     // TODO: fix the rounding problem with strike prices and then remove this test
     function testPrintStrikePrices() public view {
         uint32 currentTimestamp = uint32(block.timestamp);
@@ -1616,5 +1614,118 @@ contract StrikePricesTest is Test {
         for (uint256 i = 0; i < strikes.length; i++) {
             assertEq(strikes[i], expectedStrikes[i], string(abi.encodePacked("Strike ", i, " mismatch")));
         }
+    }
+
+    function testAreStrikePricesValidEmptyArray() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](0);
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertTrue(isValid, "Empty array should be considered valid");
+    }
+
+    function testAreStrikePricesValidSingleValidPrice() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](1);
+        prices[0] = 100 * 10**18; // ATM strike
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertTrue(isValid, "Valid single price should be accepted");
+    }
+
+    function testAreStrikePricesValidSingleInvalidPrice() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](1);
+        prices[0] = 150 * 10**18; // Invalid strike
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertFalse(isValid, "Invalid single price should be rejected");
+    }
+
+    function testAreStrikePricesValidMultipleValidPrices() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](3);
+        prices[0] = 95 * 10**18;
+        prices[1] = 100 * 10**18;
+        prices[2] = 105 * 10**18;
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertTrue(isValid, "Multiple valid prices should be accepted");
+    }
+
+    function testAreStrikePricesValidMultiplePricesOneInvalid() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](3);
+        prices[0] = 95 * 10**18;
+        prices[1] = 150 * 10**18; // Invalid strike
+        prices[2] = 105 * 10**18;
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertFalse(isValid, "Multiple prices with one invalid should be rejected");
+    }
+
+    function testAreStrikePricesValidBoundaryPrices() public view {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](2);
+        prices[0] = 875 * 10**17;  // Min strike for category 0
+        prices[1] = 1175 * 10**17; // Max strike for category 0
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertTrue(isValid, "Boundary prices should be accepted");
+    }
+
+    function testAreStrikePricesValidDifferentCategories() public view {
+        uint256 currentPrice = 100 * 10**18;
+        
+        // Test Category 0 (0-3 days)
+        uint32 expirationTime0 = uint32(block.timestamp + 2 days);
+        uint256[] memory prices0 = new uint256[](3);
+        prices0[0] = 95 * 10**18;
+        prices0[1] = 100 * 10**18;
+        prices0[2] = 105 * 10**18;
+        bool isValid0 = StrikePrices.areStrikePricesValid(currentPrice, expirationTime0, prices0);
+        assertTrue(isValid0, "Category 0 prices should be valid");
+        
+        // Test Category 1 (4-21 days)
+        uint32 expirationTime1 = uint32(block.timestamp + 14 days);
+        uint256[] memory prices1 = new uint256[](3);
+        prices1[0] = 70 * 10**18;
+        prices1[1] = 100 * 10**18;
+        prices1[2] = 130 * 10**18;
+        bool isValid1 = StrikePrices.areStrikePricesValid(currentPrice, expirationTime1, prices1);
+        assertTrue(isValid1, "Category 1 prices should be valid");
+    }
+
+    function testAreStrikePricesValidInvalidInputs() public {
+        uint256 currentPrice = 100 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](1);
+        prices[0] = 100 * 10**18;
+        
+        // Test zero current price
+        vm.expectRevert(StrikePrices.InvalidCurrentPrice.selector);
+        StrikePrices.areStrikePricesValid(0, expirationTime, prices);
+        
+        // Test expired time
+        vm.expectRevert(StrikePrices.InvalidExpirationTime.selector);
+        StrikePrices.areStrikePricesValid(currentPrice, uint32(block.timestamp), prices);
+    }
+
+    function testAreStrikePricesValidLargeNumbers() public view {
+        uint256 currentPrice = 10000000 * 10**18;
+        uint32 expirationTime = uint32(block.timestamp + 2 days);
+        uint256[] memory prices = new uint256[](3);
+        prices[0] = 8750000 * 10**18;
+        prices[1] = 10000000 * 10**18;
+        prices[2] = 11250000 * 10**18;
+        
+        bool isValid = StrikePrices.areStrikePricesValid(currentPrice, expirationTime, prices);
+        assertTrue(isValid, "Large number prices should be valid");
     }
 } 

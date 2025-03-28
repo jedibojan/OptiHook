@@ -2,8 +2,6 @@
 
 pragma solidity 0.8.26;
 
-import "forge-std/console2.sol";
-
 /**
  * @title StrikePrices
  *
@@ -63,6 +61,41 @@ library StrikePrices {
         }
         // For Category 4, use single-tier strike price generation with increment * 8
         return _generateCategory4StrikePrices(startStrike, minStrike, maxStrike, increment);
+    }
+
+    /**
+     * @notice Validates if all provided strike prices are valid according to the current price and expiration time
+     * @param currentPrice The current price of the underlying asset
+     * @param expirationTime The expiration timestamp for the options
+     * @param prices Array of strike prices to validate
+     * @return bool True if all prices are valid, false otherwise
+     */
+    function areStrikePricesValid(
+        uint256 currentPrice,
+        uint32 expirationTime,
+        uint256[] memory prices
+    ) public view returns (bool) {
+        // Input validation
+        if (currentPrice == 0) revert InvalidCurrentPrice();
+        if (expirationTime <= uint32(block.timestamp)) revert InvalidExpirationTime();
+        if (prices.length == 0) return true;
+
+        // Get valid strike prices
+        uint256[] memory validStrikes = getStrikePrices(currentPrice, expirationTime);
+
+        // For each price in the input array, check if it exists in validStrikes
+        for (uint256 i = 0; i < prices.length; i++) {
+            bool found = false;
+            for (uint256 j = 0; j < validStrikes.length; j++) {
+                if (prices[i] == validStrikes[j]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+
+        return true;
     }
 
     function _determineTimeCategory(uint32 timeToExpiration) internal pure returns (uint8) {
