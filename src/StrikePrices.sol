@@ -305,7 +305,15 @@ library StrikePrices {
         
         // Calculate number of strikes in each range
         uint256 fineStrikes = (fineUpperBound - minStrike) / (baseIncrement * 4) + 1; // 4x increment
-        uint256 coarseStrikes = (maxStrike - fineUpperBound) / (baseIncrement * 8) + 1; // 8x increment
+        uint256 coarseStrikes = 0;
+        
+        // Only calculate coarse strikes if fineUpperBound is less than maxStrike
+        if (fineUpperBound < maxStrike) {
+            uint256 firstCoarseStrike = fineUpperBound + baseIncrement * 8;
+            if (firstCoarseStrike <= maxStrike) {
+                coarseStrikes = ((maxStrike - firstCoarseStrike) / (baseIncrement * 8)) + 1;
+            }
+        }
         
         // Initialize strike prices array
         uint256[] memory strikes = new uint256[](fineStrikes + coarseStrikes);
@@ -316,8 +324,11 @@ library StrikePrices {
         }
         
         // Generate coarse-grained strikes (8x increment)
-        for (uint256 i = 0; i < coarseStrikes; i++) {
-            strikes[fineStrikes + i] = fineUpperBound + (i * baseIncrement * 8);
+        if (coarseStrikes > 0) {
+            uint256 firstCoarseStrike = fineUpperBound + baseIncrement * 8;
+            for (uint256 i = 0; i < coarseStrikes; i++) {
+                strikes[fineStrikes + i] = firstCoarseStrike + (i * baseIncrement * 8);
+            }
         }
         
         return strikes;
