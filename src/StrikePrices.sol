@@ -61,9 +61,8 @@ library StrikePrices {
         if (category == 3) {
             return _generateCategory3StrikePrices(startStrike, minStrike, maxStrike, increment);
         }
-
-        // For other categories, use standard generation
-        return _generateStrikePrices(startStrike, increment, minStrike, maxStrike);
+        // For Category 4, use single-tier strike price generation with increment * 8
+        return _generateCategory4StrikePrices(startStrike, minStrike, maxStrike, increment);
     }
 
     function _determineTimeCategory(uint32 timeToExpiration) internal pure returns (uint8) {
@@ -141,32 +140,6 @@ library StrikePrices {
 
         minStrike = currentPrice * rangeFactors[category] / 100;
         maxStrike = currentPrice * 100 / rangeFactors[category];
-    }
-
-    function _generateStrikePrices(
-        uint256 startStrike,
-        uint256 increment,
-        uint256 minStrike,
-        uint256 maxStrike
-    ) internal pure returns (uint256[] memory) {
-        // Calculate number of strikes below and above startStrike
-        uint256 strikesBelow = (startStrike - minStrike) / increment;
-        uint256 strikesAbove = (maxStrike - startStrike) / increment;
-        uint256 totalStrikes = strikesBelow + strikesAbove + 1;
-
-        uint256[] memory strikePrices = new uint256[](totalStrikes);
-        
-        // Generate strikes below startStrike
-        for (uint256 i = 0; i <= strikesBelow; i++) {
-            strikePrices[i] = startStrike - (strikesBelow - i) * increment;
-        }
-        
-        // Generate strikes above startStrike
-        for (uint256 i = 0; i < strikesAbove; i++) {
-            strikePrices[strikesBelow + 1 + i] = startStrike + (i + 1) * increment;
-        }
-
-        return strikePrices;
     }
 
     function _generateCategory0StrikePrices(
@@ -329,6 +302,29 @@ library StrikePrices {
             for (uint256 i = 0; i < coarseStrikes; i++) {
                 strikes[fineStrikes + i] = firstCoarseStrike + (i * baseIncrement * 8);
             }
+        }
+        
+        return strikes;
+    }
+
+    function _generateCategory4StrikePrices(
+        uint256 startStrike,
+        uint256 minStrike,
+        uint256 maxStrike,
+        uint256 baseIncrement
+    ) internal pure returns (uint256[] memory) {
+        // Round minStrike using baseIncrement * 8
+        minStrike = _round(minStrike, baseIncrement * 8);
+        
+        // Initialize strike prices array with fixed size of 21
+        uint256[] memory strikes = new uint256[](21);
+        
+        // Fixed increment of 200 * 10**18
+        uint256 increment = 200 * 10**18;
+        
+        // Generate strikes starting from minStrike
+        for (uint256 i = 0; i < 21; i++) {
+            strikes[i] = minStrike + (i * increment);
         }
         
         return strikes;
